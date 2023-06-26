@@ -11,7 +11,7 @@ Moreover, AI model developers have the ability to establish licensor agreements 
 Licensors can utilize **Comoco Laicensor** to construct their own tailored solutions based on the open-source project, or alternatively, they can opt to utilize the comprehensive services provided by Comoco.
 
 ## Architecture
-![Workflow Figure](workflow.jpg)
+![Architecture](arch.png)
 
 ## Showcase
 
