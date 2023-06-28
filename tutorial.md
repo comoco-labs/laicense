@@ -5,7 +5,7 @@
 1. Prepare your dataset.
 
    ```typescript
-   const datasetUri = 'https://raw.githubusercontent.com/comoco-labs/lAIcense/main/dataset/data.csv';
+   const datasetUri = 'https://raw.githubusercontent.com/comoco-labs/lAIcense/main/dataset/';
    ```
 
 2. Deploy a `DerivativeToken` contract to represent the dataset collection if not existing.
@@ -61,27 +61,17 @@ Refer [here](scripts/demo.ts#L58) for the complete code.
 2. Train over the dataset to produce a model.
 
    ```python
-   for epoch in range(num_epochs):
-      running_loss = 0.0
-
-      for batch, (inputs, targets) in enumerate(dataloader):
-            outputs = model(inputs)
-            loss = criterion(outputs, targets)
-
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            running_loss += loss.item()
+   model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, validation_data=(x_val, y_val))
    ```
 
-Refer [here](model/train.py) for the complete code.
+Refer [here](scripts/train.py) for the complete code.
 
 ## Step 4: Create a representative token of your model
 
 1. Prepare your model.
 
    ```typescript
-   const modelUri = 'https://raw.githubusercontent.com/comoco-labs/lAIcense/main/model/model.pt';
+   const modelUri = 'https://raw.githubusercontent.com/comoco-labs/lAIcense/main/model/model.tflite';
    ```
 
 2. Deploy a `DerivativeToken` contract to represent the model collection if not existing.
