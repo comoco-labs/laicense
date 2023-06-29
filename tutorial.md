@@ -60,11 +60,12 @@ Refer [here](scripts/demo.ts#L58) for the complete code.
 
 2. Train over the dataset to produce a model.
 
-   ```python
-   model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, validation_data=(x_val, y_val))
+   ```console
+   $ python scripts/train.py --input_data_dir dataset --output_checkpoint_dir model/checkpoint
+   $ python scripts/export.py --input_checkpoint_dir model/checkpoint --output_model_file model/model.tflite
    ```
 
-Refer [here](scripts/train.py) for the complete code.
+Refer to [train.py](scripts/train.py) and [export.py](scripts/export.py) for the complete code.
 
 ## Step 4: Create a representative token of your model
 

@@ -18,7 +18,7 @@ async function mintDatasetToken(): Promise<[Contract, BigNumber]> {
 
   // Mint token
   const datasetTokenId = BigNumber.from(0);
-  const datasetUri = 'https://raw.githubusercontent.com/comoco-labs/lAIcense/main/dataset/data.csv';
+  const datasetUri = 'https://raw.githubusercontent.com/comoco-labs/lAIcense/main/dataset/';
 
   await datasetCollection.connect(datasetOwner).mint(datasetOwner.address, datasetTokenId, datasetUri, [], []);
 
@@ -87,7 +87,7 @@ async function mintModelToken(
 
   // Mint token
   const modelTokenId = BigNumber.from(0);
-  const modelUri = 'https://raw.githubusercontent.com/comoco-labs/lAIcense/main/model/model.pt';
+  const modelUri = 'https://raw.githubusercontent.com/comoco-labs/lAIcense/main/model/model.tflite';
 
   const datasetToken = { collection: datasetCollection.address, id: datasetTokenId };
   const datasetOption = { collection: datasetDerivativeOption.address, id: datasetOptionId };
