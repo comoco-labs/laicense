@@ -94,17 +94,17 @@
 
 2. A small portion (say 20% here) will be shared to the data element holders whose data directly contribute to the profit. Here we have User C paying subscription to access the dataset of cars, so the owners of those data are entitled to that portion of profit, which, in our demo, is just User B. So User B can claim:
 
-   $$ 1000 \times 20\% = 200\,USDT $$
+   $$1000 \times 20\\% = 200\\,USDT$$
 
 3. The remaining portion, which is the majority (80% here), will be shared to all the credit holders. Here we have User A holding 3 out of the total 10 credits, and User B holding 7 out of the total 10 credits. So User A can claim:
 
-   $$ 1000 \times 80\% \times \frac{3}{10} = 240\,USDT $$
+   $$1000 \times 80\\% \times \frac{3}{10} = 240\\,USDT$$
 
    User B can claim:
 
-   $$ 1000 \times 80\% \times \frac{7}{10} = 560\,USDT $$
+   $$1000 \times 80\\% \times \frac{7}{10} = 560\\,USDT$$
 
-4. To sum it up, User A will claim $240\,USDT$ and User B will claim $200+560=760\,USDT$ altogether.
+4. To sum it up, User A will claim $240\\,USDT$ and User B will claim $200+560=760\\,USDT$ altogether.
 
 ## Step 6: Model Publication
 
