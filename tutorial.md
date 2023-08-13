@@ -13,11 +13,12 @@
 
 2. For the following steps, we would use `Contract` objects derived from those addresses:
 
-    ```typescript
-   const dearCoin = await ethers.getContractAt("DerivativeToken", DEAR_COIN_ADDRESS);
-   const dataCollection = await ethers.getContractAt("DerivativeToken", DATA_COLLECTION_ADDRESS);
-   const datasetCollection = await ethers.getContractAt("DerivativeToken", DATASET_COLLECTION_ADDRESS);
-   const modelCollection = await ethers.getContractAt("DerivativeToken", MODEL_COLLECTION_ADDRESS);
+   ```typescript
+   const [owner] = await ethers.getSigners();
+   const dearCoin = await ethers.getContractAt("DearCoin", DEAR_COIN_ADDRESS, owner);
+   const dataCollection = await ethers.getContractAt("DerivativeToken", DATA_COLLECTION_ADDRESS, owner);
+   const datasetCollection = await ethers.getContractAt("DerivativeToken", DATASET_COLLECTION_ADDRESS, owner);
+   const modelCollection = await ethers.getContractAt("DerivativeToken", MODEL_COLLECTION_ADDRESS, owner);
    ```
 
 3. For the demo purpose, we would create three different users. The first two users are both data creators, and the third user is the model trainer who consumes the dataset:
@@ -130,3 +131,5 @@
    expect(datasetTokens[0].collection).to.equal(DATASET_COLLECTION_ADDRESS);
    expect(datasetTokens[0].id).to.equal(1);
    ```
+
+Refer to [demo.ts](scripts/demo.ts) for the complete code.

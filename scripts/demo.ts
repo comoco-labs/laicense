@@ -1,151 +1,53 @@
-import { BigNumber, Contract } from 'ethers';
-import { ethers, upgrades } from 'hardhat';
+import { Contract } from "ethers";
+import { ethers } from "hardhat";
 
-// TODO: Remove in future
-const REGISTRY_ADDRESS = '0xa73f316A31149230732aCdA4e63706556bE63CC8';
+const DEAR_COIN_ADDRESS = "0x2Bad2FD9cD88387542B1A7d0a87A1010f6f336F5";
+const DATA_COLLECTION_ADDRESS = "0x5a7dE6bAb521Df2c22d4b7b4D8c678Efd7B3F7a6";
+const DATASET_COLLECTION_ADDRESS = "0xb7f967952A3AF46Df78971a9cB9a0dc22D060a45";
+const MODEL_COLLECTION_ADDRESS = "0x55e7B44Ba036BBa781ACb5a8EcC3ebfb68140A57";
 
-async function mintDatasetToken(): Promise<[Contract, BigNumber]> {
-  // Get accounts
-  const [admin, datasetOwner] = await ethers.getSigners();
-
-  // Deploy contract
-  const datasetName = 'Dataset Collection';
-  const datasetSymbol = 'DC';
-
-  const derivativeTokenFactory = await ethers.getContractFactory('DerivativeToken');
-  const datasetCollection = await upgrades.deployProxy(derivativeTokenFactory, [admin.address, datasetOwner.address, datasetName, datasetSymbol, REGISTRY_ADDRESS]);
-  await datasetCollection.deployed();
-
-  // Mint token
-  const datasetTokenId = BigNumber.from(0);
-  const datasetUri = 'https://raw.githubusercontent.com/comoco-labs/lAIcense/main/dataset/';
-
-  await datasetCollection.connect(datasetOwner).mint(datasetOwner.address, datasetTokenId, datasetUri, [], []);
-
-  // Print result
-  const datasetToken = { collection: datasetCollection.address, id: datasetTokenId };
-  console.log('Dataset token minted at', datasetToken);
-
-  return [datasetCollection, datasetTokenId];
+async function setupContracts(owner: ethers.Signer): Promise<[Contract, Contract, Contract, Contract]> {
+  const dearCoin = await ethers.getContractAt("DearCoin", DEAR_COIN_ADDRESS, owner);
+  const dataCollection = await ethers.getContractAt("DerivativeToken", DATA_COLLECTION_ADDRESS, owner);
+  const datasetCollection = await ethers.getContractAt("DerivativeToken", DATASET_COLLECTION_ADDRESS, owner);
+  const modelCollection = await ethers.getContractAt("DerivativeToken", MODEL_COLLECTION_ADDRESS, owner);
+  return [dearCoin, dataCollection, datasetCollection, modelCollection];
 }
 
-async function issueDatasetOption(
-  datasetCollection: Contract, datasetTokenId: BigNumber
-): Promise<[Contract, BigNumber]> {
-  // Get accounts
-  const [_admin, datasetOwner] = await ethers.getSigners();
-
-  // Deploy contract
-  const derivativeOptionFactory = await ethers.getContractFactory('DerivativeOption');
-  const datasetDerivativeOption = await upgrades.deployProxy(derivativeOptionFactory, [datasetOwner.address, '']);
-  await datasetDerivativeOption.deployed();
-
-  // Mint token
-  const datasetToken = { collection: datasetCollection.address, id: datasetTokenId };
-  const datasetOptionId = await datasetDerivativeOption.connect(datasetOwner).callStatic.mint(datasetOwner.address, 1, datasetToken, []);
-  await datasetDerivativeOption.connect(datasetOwner).mint(datasetOwner.address, 1, datasetToken, []);
-
-  // Bind option
-  const datasetOption = { collection: datasetDerivativeOption.address, id: datasetOptionId };
-  await datasetCollection.connect(datasetOwner).addDerivativeOption(datasetTokenId, [datasetOption]);
-
-  // Print result
-  console.log('Dataset option issued at', datasetOption);
-
-  return [datasetDerivativeOption, datasetOptionId];
+async function createData(dataCollection: Contract, userA: ethers.Signer, userB: ethers.Signer) {
+  await dataCollection.mint(userA.address, 0, "https://3dwarehouse.sketchup.com/model/371a609f050b4ed3f6497dc58a9a6f8a/SR-71-Blackbird", []);
+  await dataCollection.mint(userA.address, 1, "https://3dwarehouse.sketchup.com/model/dd9ece07d4bc696c2bafe808edd44356/x-wing", []);
+  await dataCollection.mint(userB.address, 2, "https://3dwarehouse.sketchup.com/model/bcf0b18a19bce6d91ad107790a9e2d51/Hummer-H1-SUT", []);
+  await dataCollection.mint(userB.address, 3, "https://3dwarehouse.sketchup.com/model/5876e90c8f0b15e112ed57dd1bc82aa3/Alfa-Romeo-156", []);
+  await dataCollection.mint(userB.address, 4, "https://3dwarehouse.sketchup.com/model/402d1624e1c28422383a5be3771c595c/1957-Chevrolet-Bel-Air", []);
 }
 
-async function acquireDatasetOption(
-  datasetDerivativeOption: Contract, datasetOptionId: BigNumber
-) {
-  // Get accounts
-  const [_admin, datasetOwner, modelOwner] = await ethers.getSigners();
-
-  // Acquire option
-  await datasetDerivativeOption.connect(datasetOwner).safeTransferFrom(datasetOwner.address, modelOwner.address, datasetOptionId, 1, []);
-
-  // Print result
-  console.log('Dataset option acquired by model owner');
+async function issueCredits(dearCoin: Contract, userA: ethers.Signer, userB: ethers.Signer) {
+  await dearCoin.mint(userA.address, 3);
+  await dearCoin.mint(userB.address, 7);
 }
 
-async function mintModelToken(
-  datasetCollection: Contract, datasetTokenId: BigNumber, datasetDerivativeOption: Contract, datasetOptionId: BigNumber
-): Promise<[Contract, BigNumber]> {
-  // Get accounts
-  const [admin, _datasetOwner, modelOwner] = await ethers.getSigners();
-
-  // Deploy contract
-  const modelName = 'Model Collection';
-  const modelSymbol = 'MC';
-
-  const derivativeTokenFactory = await ethers.getContractFactory('DerivativeToken');
-  const modelCollection = await upgrades.deployProxy(derivativeTokenFactory, [admin.address, modelOwner.address, modelName, modelSymbol, REGISTRY_ADDRESS]);
-  await modelCollection.deployed();
-
-  // Authorize option
-  await datasetDerivativeOption.connect(modelOwner).setApprovalForAll(modelCollection.address, true);
-
-  // Mint token
-  const modelTokenId = BigNumber.from(0);
-  const modelUri = 'https://raw.githubusercontent.com/comoco-labs/lAIcense/main/model/model.tflite';
-
-  const datasetToken = { collection: datasetCollection.address, id: datasetTokenId };
-  const datasetOption = { collection: datasetDerivativeOption.address, id: datasetOptionId };
-  await modelCollection.connect(modelOwner).mint(modelOwner.address, modelTokenId, modelUri, [datasetToken], [datasetOption]);
-
-  // Print result
-  const modelToken = { collection: modelCollection.address, id: modelTokenId };
-  console.log('Model token minted at', modelToken);
-
-  return [modelCollection, modelTokenId];
+async function createDatasets(datasetCollection: Contract, owner: ethers.Signer) {
+  await datasetCollection.mint(owner.address, 0, "https://raw.githubusercontent.com/comoco-labs/laicense/dev/dataset/0.json", []);
+  await datasetCollection.mint(owner.address, 1, "https://raw.githubusercontent.com/comoco-labs/laicense/dev/dataset/1.json", []);
 }
 
-async function issueModelOption(
-  modelCollection: Contract, modelTokenId: BigNumber
-): Promise<[Contract, BigNumber]> {
-  // Get accounts
-  const [_admin, _datasetOwner, modelOwner] = await ethers.getSigners();
-
-  // Deploy contract
-  const utilityOptionFactory = await ethers.getContractFactory('UtilityOption');
-  const modelUtilityOption = await upgrades.deployProxy(utilityOptionFactory, [modelOwner.address, '']);
-  await modelUtilityOption.deployed();
-
-  // Mint token
-  const modelToken = { collection: modelCollection.address, id: modelTokenId };
-  const modelOptionId = await modelUtilityOption.connect(modelOwner).callStatic.mint(modelOwner.address, 1, modelToken, []);
-  await modelUtilityOption.connect(modelOwner).mint(modelOwner.address, 1, modelToken, []);
-
-  // Bind option
-  const modelOption = { collection: modelUtilityOption.address, id: modelOptionId };
-  await modelCollection.connect(modelOwner).addUtilityOption(modelTokenId, [modelOption]);
-
-  // Print result
-  console.log('Model option issued at', modelOption);
-
-  return [modelUtilityOption, modelOptionId];
+async function subscribeDataset(datasetCollection: Contract, userC: ethers.Signer) {
+  await datasetCollection.setUser(1, userC.address, 1704096000);
 }
 
-async function acquireModelOption(
-  modelUtilityOption: Contract, modelOptionId: BigNumber
-) {
-  // Get accounts
-  const [_admin, _datasetOwner, modelOwner, app] = await ethers.getSigners();
-
-  // Acquire option
-  await modelUtilityOption.connect(modelOwner).safeTransferFrom(modelOwner.address, app.address, modelOptionId, 1, []);
-
-  // Print result
-  console.log('Model option acquired by application');
+async function publicizeModel(modelCollection: Contract, userC: ethers.Signer) {
+  await modelCollection.mint(userC.address, 0, "https://raw.githubusercontent.com/comoco-labs/laicense/dev/model/model.tflite", [{collection: DATASET_COLLECTION_ADDRESS, id: 1}]);
 }
 
 async function main() {
-  const [datasetCollection, datasetTokenId] = await mintDatasetToken();
-  const [datasetDerivativeOption, datasetOptionId] = await issueDatasetOption(datasetCollection, datasetTokenId);
-  await acquireDatasetOption(datasetDerivativeOption, datasetOptionId);
-  const [modelCollection, modelTokenId] = await mintModelToken(datasetCollection, datasetTokenId, datasetDerivativeOption, datasetOptionId);
-  const [modelUtilityOption, modelOptionId] = await issueModelOption(modelCollection, modelTokenId);
-  await acquireModelOption(modelUtilityOption, modelOptionId);
+  const [owner, userA, userB, userC] = await ethers.getSigners();
+  const [dearCoin, dataCollection, datasetCollection, modelCollection] = await setupContracts(owner);
+  await createData(dataCollection, userA, userB);
+  await issueCredits(dearCoin, userA, userB);
+  await createDatasets(datasetCollection, owner);
+  await subscribeDataset(datasetCollection, userC);
+  await publicizeModel(modelCollection, userC);
 }
 
 main().catch((error) => {
